@@ -12,7 +12,11 @@ default: deps
 .venv:
 	if [ ! -e ".venv/bin/activate_this.py" ] ; then python -m venv .venv ; fi
 
-clean: clean-pyc clean-test
+clean: clean-dist clean-pyc clean-test
+
+clean-dist:
+	rm -rf build
+	rm -rf dist
 
 clean-pyc:
 	find . -name '*.pyc' -exec rm -f {} +
