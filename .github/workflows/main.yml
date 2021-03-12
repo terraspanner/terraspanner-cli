@@ -12,8 +12,10 @@ jobs:
         with:
           python-version: '3.9'
       - run: make all
-      - uses: softprops/action-gh-release@v1
+      - - uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          files: dist/terraspanner
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          title: "Build"
+          files: |
+            dist/terraspanner
