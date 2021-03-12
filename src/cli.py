@@ -7,6 +7,8 @@ import logging
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
+tf = Terraform()
+
 default_git_user=os.getenv('GIT_USER')
 default_git_token=os.getenv('GIT_TOKEN')
 default_git_repo=os.getenv('GIT_REPO')
@@ -27,11 +29,11 @@ def tf_plan(arguments, options):
         refresh = options.refresh,
         target = options.target,
         var_file = options.var_file,
-        var={var.split()[0] : var.split()[1] for var in options.var}
+        var={var.split()[0] : var.split()[1] for var in options.var} if options.var is not None else None
         )
     if stdout is not None:
         logging.info(stdout)
-    if stderr is not None:
+    if return_code != 0:
         raise Exception(stderr)
 
 def tf_apply(arguments, options):
