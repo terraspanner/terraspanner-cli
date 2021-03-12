@@ -67,7 +67,7 @@ def try_get_target_from_commit(local_repo_path):
         last_commit_message = repo.head.commit.message
         if "[terraspanner]" not in last_commit_message:
             return None
-        parameters=json.loads(re.sub("[\[terraspanner\]]", "", last_commit_message))
+        parameters=json.loads(last_commit_message[len("[terraspanner]")+1:len(last_commit_message)-2])
         return parameters['target']
     except Exception as ex:
         logging.debug(ex)
@@ -79,7 +79,7 @@ def try_get_var_from_commit(local_repo_path):
         last_commit_message = repo.head.commit.message
         if "[terraspanner]" not in last_commit_message:
             return None
-        parameters=json.loads(re.sub("[\[terraspanner\]]", "", last_commit_message))
+        parameters=json.loads(last_commit_message[len("[terraspanner]")+1:len(last_commit_message)-2])
         return parameters['var']
     except Exception as ex:
         logging.debug(ex)
@@ -123,7 +123,7 @@ def main():
     parser.add_option('-d','--git-domain', dest='domain', help='git domain (ex. github.com)', metavar='GIT_DOMAIN', default=default_git_domain)
     parser.add_option('-r','--git-repo', dest='repo', help='git repo (ex. )', metavar='GIT_DOMAIN', default=default_git_domain)
     #repo finder
-    parser.add_option('-l','--local-repo-path', dest='local_repo_path', help='local repository path (defaults to local folder)', metavar='GIT_DOMAIN', default="./")
+    parser.add_option('-l','--local-repo-path', dest='local_repo_path', help='local repository path (defaults to local folder)', metavar='GIT_DOMAIN', default=os.getcwd())
     #terraform plan options
     parser.add_option('--compact-warnings', dest='compact_warnings', action='store_true', help='If Terraform produces any warnings that are not accompanied by errors, show them in a more compact form that includes only the summary messages.')
     parser.add_option('--destroy', dest='destroy', action='store_true', help='If set, a plan will be generated to destroy all resources managed by the given configuration and state.')
