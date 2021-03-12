@@ -32,7 +32,7 @@ deps: .venv
 	. .venv/bin/activate && pip install -U -r requirements.txt
 
 dist: .venv
-	. .venv/bin/activate && pyinstaller --onefile cli.py
+	. .venv/bin/activate && pyinstaller --onefile src/cli.py --name terraspanner
 
 run: .venv
-	. .venv/bin/activate && python cli.py
+	. .venv/bin/activate && python src/cli.py 
