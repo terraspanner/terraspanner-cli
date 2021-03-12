@@ -73,6 +73,18 @@ def try_get_target_from_commit(local_repo_path):
         logging.debug(ex)
         return None
 
+def try_get_var_from_commit(local_repo_path):
+    try:
+        repo = Repo(local_repo_path)
+        last_commit_message = repo.head.commit.message
+        if "[terraspanner]" not in last_commit_message:
+            return None
+        parameters=json.loads(re.sub("[\[terraspanner\]]", "", last_commit_message))
+        return parameters['var']
+    except Exception as ex:
+        logging.debug(ex)
+        return None
+
 tf_commands = {
     'plan': tf_plan,
     'apply': tf_apply
@@ -81,6 +93,8 @@ tf_commands = {
 def run_tf_command(arguments, options):
     if options.target is None:
         options.target = try_get_target_from_commit(options.local_repo_path)
+    if options.var is None:
+        options.var = try_get_var_from_commit(options.local_repo_path)
     command=arguments[0]
     command_arguments=arguments[1:len(arguments)]
     tf_commands[command](command_arguments, options)
