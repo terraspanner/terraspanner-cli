@@ -4,6 +4,9 @@ import tempfile
 from git import Repo
 from python_terraform import *
 import logging
+import json
+import re
+import copy
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
@@ -58,12 +61,26 @@ def tf_apply(arguments, options):
     if stderr is not None:
         raise Exception(stderr)
 
+def try_get_target_from_commit(local_repo_path):
+    try:
+        repo = Repo(local_repo_path)
+        last_commit_message = repo.head.commit.message
+        if "[terraspanner]" not in last_commit_message:
+            return None
+        parameters=json.loads(re.sub("[\[terraspanner\]]", "", last_commit_message))
+        return parameters['target']
+    except Exception as ex:
+        logging.debug(ex)
+        return None
+
 tf_commands = {
     'plan': tf_plan,
     'apply': tf_apply
 }
 
 def run_tf_command(arguments, options):
+    if options.target is None:
+        options.target = try_get_target_from_commit(options.local_repo_path)
     command=arguments[0]
     command_arguments=arguments[1:len(arguments)]
     tf_commands[command](command_arguments, options)
@@ -77,7 +94,7 @@ def trigger_terraform_repo(_, options):
     with tempfile.TemporaryDirectory() as temp_repo_dir:
         git_url=f'https://{options.token}@{options.domain}/{options.repo}.git'
         repo = Repo.clone_from(git_url, temp_repo_dir)
-        repo.git.commit('--allow-empty','-m', '"[terraspanner]"')
+        repo.git.commit('--allow-empty','-m', f'"[terraspanner]{json.dumps({ "target": options.target, "var": options.var })}"')
         repo.git.push()
 
 commands = {
@@ -91,6 +108,8 @@ def main():
     parser.add_option('-t','--git-token', dest='token', help='git token', metavar='GIT_TOKEN', default=default_git_token)
     parser.add_option('-d','--git-domain', dest='domain', help='git domain (ex. github.com)', metavar='GIT_DOMAIN', default=default_git_domain)
     parser.add_option('-r','--git-repo', dest='repo', help='git repo (ex. )', metavar='GIT_DOMAIN', default=default_git_domain)
+    #repo finder
+    parser.add_option('-l','--local-repo-path', dest='local_repo_path', help='local repository path (defaults to local folder)', metavar='GIT_DOMAIN', default="./")
     #terraform plan options
     parser.add_option('--compact-warnings', dest='compact_warnings', action='store_true', help='If Terraform produces any warnings that are not accompanied by errors, show them in a more compact form that includes only the summary messages.')
     parser.add_option('--destroy', dest='destroy', action='store_true', help='If set, a plan will be generated to destroy all resources managed by the given configuration and state.')

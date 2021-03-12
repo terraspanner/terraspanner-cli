@@ -134,3 +134,4 @@ release/
 release_gcp/
 release_tmp/
 .idea
+.vscode
