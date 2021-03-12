@@ -1,2 +1,3 @@
 pyinstaller
 GitPython
+python-terraform
